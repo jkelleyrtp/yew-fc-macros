@@ -1,0 +1,13 @@
+[package]
+name = "fc-macros"
+version = "0.1.0"
+authors = ["Jonathan Kelley <>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1"
+quote = "1"
+heck = "0.3"
