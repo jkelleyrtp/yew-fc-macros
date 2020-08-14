@@ -1,7 +1,7 @@
 use heck::CamelCase;
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use syn::{FnArg, Ident, Item, Signature};
+use syn::{FnArg, Ident, Item, Signature, Token};
 
 /// This macros autogenerates the functional component requirements for a yew function
 /// This allows annotating individual functions as components
@@ -38,7 +38,7 @@ pub fn functional_component(_attr: TokenStream, item: TokenStream) -> TokenStrea
         );
 
         // Get the token of the input properties
-        let prop_token = get_prop_name(inputs.first().unwrap());
+        let prop_token = get_prop_name(inputs.first());
 
         // Get the body of the functional component
         let function_body = &f.block;
@@ -46,9 +46,9 @@ pub fn functional_component(_attr: TokenStream, item: TokenStream) -> TokenStrea
         let gen = quote! {
             pub struct #gen_name;
             impl FunctionProvider for #gen_name {
-                type TProps = #prop_token;
+                type TProps = (#prop_token);
 
-                fn run(props: &Self::TProps) -> Html {
+                fn run((props): &Self::TProps) -> Html {
                     #function_body
                 }
             }
@@ -61,18 +61,23 @@ pub fn functional_component(_attr: TokenStream, item: TokenStream) -> TokenStrea
     }
 }
 
-fn get_prop_name(args: &FnArg) -> &Ident {
-    // Ensure the props is an function arg
-    // We've captured an explicitly typed function argument set
-    if let FnArg::Typed(r) = args {
-        // Ensure the prop is a reference type
-        // This means the prop is being pased in by reference
-        if let syn::Type::Reference(a) = &r.ty.as_ref() {
-            // Now we grab out [&PathCounter] token and extract the ident
-            if let syn::Type::Path(pathitem) = a.elem.as_ref() {
-                return &pathitem.path.segments.first().unwrap().ident;
+fn get_prop_name(args: Option<&FnArg>) -> Option<Ident> {
+    match args {
+        Some(arg) => {
+            // Ensure the props is an function arg
+            // We've captured an explicitly typed function argument set
+            if let FnArg::Typed(r) = arg {
+                // Ensure the prop is a reference type
+                // This means the prop is being pased in by reference
+                if let syn::Type::Reference(a) = &r.ty.as_ref() {
+                    // Now we grab out [&PathCounter] token and extract the ident
+                    if let syn::Type::Path(pathitem) = a.elem.as_ref() {
+                        return Some(pathitem.path.segments.first().unwrap().ident.to_owned());
+                    }
+                }
             }
         }
+        None => return None,
     }
 
     unimplemented!("Functional component declaration is malformed");
