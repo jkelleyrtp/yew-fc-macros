@@ -82,3 +82,10 @@ fn get_prop_name(args: Option<&FnArg>) -> Option<Ident> {
 
     unimplemented!("Functional component declaration is malformed");
 }
+
+#[proc_macro]
+pub fn callback(item: TokenStream) -> TokenStream {
+    format!("Callback::from(closure!({}))", item)
+        .parse()
+        .unwrap()
+}
