@@ -89,3 +89,10 @@ pub fn callback(item: TokenStream) -> TokenStream {
         .parse()
         .unwrap()
 }
+
+#[proc_macro]
+pub fn callback_once(item: TokenStream) -> TokenStream {
+    format!("Callback::once(closure!({}))", item)
+        .parse()
+        .unwrap()
+}
