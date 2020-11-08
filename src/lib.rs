@@ -45,15 +45,15 @@ pub fn functional_component(_attr: TokenStream, item: TokenStream) -> TokenStrea
 
         let gen = quote! {
             pub struct #gen_name;
-            impl FunctionProvider for #gen_name {
+            impl yew_functional::FunctionProvider for #gen_name {
                 type TProps = (#prop_token);
 
-                fn run((props): &Self::TProps) -> Html {
+                fn run((props): &Self::TProps) -> yew::prelude::Html {
                     #function_body
                 }
             }
 
-            pub type #new_name = FunctionComponent<#gen_name>;
+            pub type #new_name = yew_functional::FunctionComponent<#gen_name>;
         };
         gen.into()
     } else {
